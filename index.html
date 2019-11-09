@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.17.1/axios.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+<body>
+  <div id="app">
+    <v-app>
+      <v-content>
+        <v-container>
+
+          <template>
+            <div>
+              <v-alert :value="alert2"  type="error" >
+                {{errorMessage}}
+              </v-alert>
+            </div>
+            <div >
+              <v-alert :value="ale" type="success" >
+                {{successMessage}}
+              </v-alert>
+            </div>
+            <v-btn color="info" href="http://52.88.116.84/vencidos/index.php/ingreso/admin">Buscar</v-btn>
+            <v-dialog persistent v-model="dialog" max-width="50%">
+          <v-card >
+            <v-card-text>
+              <v-layout row wrap>
+                  <v-text-field
+                    v-model="search"
+                    append-icon="search"
+                    label="Buscar"
+                    single-line
+                    hide-details
+                    autofocus
+                    clearable
+                    @keyup = "getAllproducto"
+                    @keyup.escape = "dialog = false"
+                  ></v-text-field>
+                  <v-btn color="error" round @click="dialog = false">Cancelar</v-btn>
+              </v-layout>
+
+              <v-data-table
+                :headers="headers"
+                :items="prod"
+              >
+                <template slot="items" slot-scope="props">
+                  <tr @click="send(props.item)">
+                  <td class="text-xs-left">{{ props.item.idproductos }}</td>
+                  <td class="text-xs-left">{{ props.item.nombre_productos }}</td>
+                </template>
+                <template slot="no-data" class="text--center">
+                  <p class="text-md-center">Producto no encontrado</p>
+                </template>
+              </v-data-table>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+
+
+
+    <v-container>
+      <v-layout row wrap>
+
+        <v-flex xs12 sm6>
+        <v-text-field
+        @click="dialog = true"
+        v-model="producto"
+        label="Producto"
+        solo
+        readonly
+        ></v-text-field>
+        </v-flex>
+
+        <v-flex xs12 sm6 md3>
+        <v-autocomplete
+        v-model="newproducto.casa"
+        item-text="nombrecasa"
+        item-value="idcasa"
+        :items="casa"
+        label="Casa"
+        solo
+        ></v-autocomplete>
+        </v-flex>
+
+        <v-flex xs12 sm6 md3>
+        <v-autocomplete
+          v-model="newproducto.proveedor"
+          item-text="nombreprov"
+          item-value="idproveedor"
+          :items="proveedor"
+        label="Proveedor"
+        solo
+        ></v-autocomplete>
+        </v-flex>
+        </v-layout>
+
+        <v-layout row wrap>
+        <v-flex xs12 sm6 md3>
+        <v-autocomplete
+          v-model="newproducto.politica"
+        label="Politica"
+        item-text="estado"
+        item-value="valor"
+        :items="politica"
+        solo
+        ></v-autocomplete>
+        </v-flex>
+
+        <v-flex xs12 sm6 md3>
+          <v-menu
+                  v-model="menu2"
+                  :close-on-content-click="false"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  max-width="290px"
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    v-model="computedDateFormatted"
+                    label="Fecha"
+                    hide-details
+                    persistent-hint
+                    prepend-inner-icon="event"
+                    solo
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="newproducto.caducidad"
+                    type="month"
+                    no-title
+                    @input="menu2 = false"
+                  ></v-date-picker>
+                </v-menu>
+        </v-flex>
+
+        <v-flex xs12 sm6 md3>
+          <v-text-field
+            v-model="newproducto.lote"
+            label="Lote"
+            solo
+          ></v-text-field>
+        </v-flex>
+        </v-layout>
+
+        <v-layout row wrap>
+        <v-flex xs12 sm6 md3>
+        <v-autocomplete
+          v-model="newproducto.estado"
+          item-text="estado"
+          item-value="valor"
+          :items="dataestado"
+          label="Estado"
+          solo
+          disabled
+        ></v-autocomplete>
+        </v-flex>
+
+        <v-flex xs12 sm2>
+        <v-autocomplete
+          v-model="newproducto.usuario"
+          item-text="estado"
+          item-value="valor"
+          :items="usuario"
+          label="Usuario"
+          solo
+        ></v-autocomplete>
+        </v-flex>
+
+        <v-flex xs12 sm6 md3>
+        <v-btn color="primary" @click="guardar()">
+          Guardar
+        </v-btn>
+        </v-flex>
+      </v-layout>
+
+      <v-card >
+        <v-card-text>
+          <v-data-table
+            :headers="headersingreso"
+            :items="produ"
+            :custom-sort="customSort"
+          >
+            <template slot="items" slot-scope="props">
+              <td class="text-xs-left">{{ props.item.Id }}</td>
+              <td class="text-xs-left">{{ props.item.nombre_productos }}</td>
+              <td class="text-xs-left">{{ props.item.nombrecasa }}</td>
+              <td class="text-xs-left">{{ props.item.nombreprov }}</td>
+              <td class="text-xs-left">{{ props.item.Politica }}</td>
+              <td class="text-xs-left">{{ props.item.Caducidad }}</td>
+              <td class="text-xs-left">{{ props.item.Estado }}</td>
+            </template>
+
+          </v-data-table>
+        </v-card-text>
+      </v-card>
+    </v-container>
+</template>
+        </v-container>
+      </v-content>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
+  <script type="text/javascript" src="app.js"></script>
+
+</body>
+</html>
